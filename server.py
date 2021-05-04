@@ -3,7 +3,7 @@ import threading
 import pickle
 
 server = socket.socket()
-port = 13234
+port = 12342
 server.bind(('',port))
 server.listen(5)
 
@@ -18,7 +18,7 @@ def find_client_nickname(client):
 
 def communicate(sender_client, message):
     receiver_nickname, encrypted_message = message.split(' ', 1)
-    receiver_client = client_data[receiver_nickname][0]
+    receiver_client = client_data[receiver_nickname.lower()][0]
     sender_client_nickname = find_client_nickname(sender_client)
     updated_message = f"{sender_client_nickname} {encrypted_message}"
 
@@ -26,8 +26,11 @@ def communicate(sender_client, message):
 
 
 def broadcast(message):
+    client_data_partial={}
+    with open("data.pickle", "rb") as f:
+        client_data_partial = pickle.load(f)
 
-    for nickname in client_data.keys():
+    for nickname in client_data_partial.keys():
         receiver_client = client_data[nickname][0]
         receiver_client.send(message.encode('utf-8'))
 
@@ -44,19 +47,35 @@ def handle_client(client):
             print(e)
 
             announcement = f"server {client_nickname} has left the chat"
-            broadcast(announcement)
-            client_data.pop(client_nickname)
-            client_data[client_nickname].close()
+
+            client_data_partial={}
+            with open("data.pickle", "rb") as f:
+                client_data_partial = pickle.load(f)
+
+            # client_data_partial.pop(client_nickname)
+            client_data[client_nickname][0].close()
+
+            try:
+                broadcast(announcement)
+            except:
+                print(f"{client_nickname.capitalize()} has left the chat")
+
+            # client_data_partial.pop(client_nickname)
+            # client_data[client_nickname].close()
+
+            with open("data.pickle", "wb") as f:
+                pickle.dump(client_data_partial, f)
+
+            break
 
 
 def main():
     while True:
         client, client_address = server.accept()
-        print(f"Connected with {client_address}")
         
         client.send('server 1'.encode('utf-8'))
         nickname = client.recv(1024).decode('utf-8')
-        print(f"Nickname of the Client is {nickname}")
+        print(f"[Connected with {nickname.capitalize()} ({client_address})]")
         
         client.send('server 2'.encode('utf-8'))
         public_key = client.recv(1024).decode('utf-8')
@@ -64,14 +83,14 @@ def main():
         client.send('server 3'.encode('utf-8'))
         N = client.recv(1024).decode('utf-8')
         
-        client_data[nickname] = [client, int(public_key), int(N)]
-        client_data_partial[nickname] = [int(public_key), int(N)]
+        client_data[nickname.lower()] = [client, int(public_key), int(N)]
+        client_data_partial[nickname.lower()] = [int(public_key), int(N)]
 
         with open("data.pickle", "wb") as f:
             pickle.dump(client_data_partial, f)
 
         
-        announcement = f"server {nickname} has joined the chat"
+        announcement = f"server {nickname.capitalize()} has joined the chat"
         broadcast(announcement)
 
         client.send("server Connected To Server".encode('utf-8'))
@@ -80,5 +99,5 @@ def main():
 
 
 
-print("Server is Running")
+print("[Server is Running]")
 main()

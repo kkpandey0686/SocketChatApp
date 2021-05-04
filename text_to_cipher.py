@@ -1,4 +1,3 @@
-from key_generator import *
 
 def text_to_numeric_cipher(text):
     cipher ="1"
