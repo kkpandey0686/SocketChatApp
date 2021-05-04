@@ -1,12 +1,12 @@
 import socket
 import threading
 from key_generator import generate_keys
-from text_to_cipher import encrypt, decrypt
+from text_to_cipher import encrypt, decrypt, text_to_numeric_cipher,numeric_cipher_to_text
 import pickle
 
 
 public_key, private_key, N = generate_keys()
-nickname = input("choose a nickname: ")
+nickname = input("Choose a Nickname: ")
 
 client = socket.socket()
 port = 13234
@@ -25,11 +25,12 @@ def receive():
                 else:
                     decrypted_message = encrypted_message 
             else:
-                if encrypted_message.isdigit():
-                    decrypted_message = decrypt(int(encrypted_message), private_key, N)
-                else:
-                    decrypted_message = encrypted_message 
-
+                print("hello1")
+                decrypted_message = decrypt(int(encrypted_message), private_key, N)
+                print("hello2")
+                decrypted_message = numeric_cipher_to_text(str(decrypted_message))
+ 
+            print("hello")
             if sender_nickname == 'server':
                 if decrypted_message == 1:
                     client.send(nickname.encode('utf-8'))
@@ -41,10 +42,12 @@ def receive():
                     print(received_message)
 
             else:
-                print(f"{sender_nickname} {decrypted_message}")
+                print("yes")
+                
+                print(f"{sender_nickname.capitalize()}: {decrypted_message}")
                 
         except Exception as e:
-            print(f"an error occured {e}")
+            print(f"An error has Occured: {e}")
             client.close()
             break
 
@@ -52,9 +55,12 @@ def receive():
 def write():
     while True:
         input_message = f'{input("")}'
-        receiver_nickname, text = input_message.split(' ', 1)
+        receiver_nickname, input_text = input_message.split(' ', 1)
         
-        client_data_partial ={}
+        text = text_to_numeric_cipher(input_text)
+        
+        client_data_partial = {}
+        
 
         with open("data.pickle", "rb") as f:
             client_data_partial = pickle.load(f)

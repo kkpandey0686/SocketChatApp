@@ -74,7 +74,7 @@ def main():
         announcement = f"server {nickname} has joined the chat"
         broadcast(announcement)
 
-        client.send("Connected To Server".encode('utf-8'))
+        client.send("server Connected To Server".encode('utf-8'))
         thread = threading.Thread(target=handle_client, args=(client,) )
         thread.start()
 
