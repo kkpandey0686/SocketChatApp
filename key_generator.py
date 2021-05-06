@@ -3,7 +3,6 @@ def generate_primes():
     
     p = number.getPrime(1024)
     q = number.getPrime(1024)
-    print(p, q)
     return p, q
 
 def generate_public_key(phi_n):

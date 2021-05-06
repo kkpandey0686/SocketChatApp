@@ -12,12 +12,13 @@ port = 12342
 client.connect(('127.0.0.1', port))
 
 def close_connection(client_data_partial):
+    # print(client_data_partial)
+    if nickname.lower() in client_data_partial:
+        client_data_partial.pop(nickname.lower())
+        with open("data.pickle", "wb") as f:
+            pickle.dump(client_data_partial, f)
 
-    client_data_partial.pop(nickname.lower())
-    with open("data.pickle", "wb") as f:
-        pickle.dump(client_data_partial, f)
-
-    client.close()
+        client.close()
 
 def show_users(client_data_partial):
     for nickname in client_data_partial.keys():
@@ -55,12 +56,16 @@ def receive():
             print(f"An error has Occured: {e}")
 
             client_data_partial = {}
-            with open("data.pickle", "rb") as f:
-                client_data_partial = pickle.load(f)
 
-            close_connection(client_data_partial)
-            client.close()
-            break
+            try:
+                with open("data.pickle", "rb") as f:
+                    client_data_partial = pickle.load(f)
+
+                close_connection(client_data_partial)
+            # client.close()
+                break
+            except:
+                print("file not found")
 
 
 def write():

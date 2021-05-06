@@ -31,8 +31,11 @@ def broadcast(message):
         client_data_partial = pickle.load(f)
 
     for nickname in client_data_partial.keys():
-        receiver_client = client_data[nickname][0]
-        receiver_client.send(message.encode('utf-8'))
+        try:
+            receiver_client = client_data[nickname][0]
+            receiver_client.send(message.encode('utf-8'))
+        except:
+            pass
 
 
 def handle_client(client):
@@ -53,7 +56,7 @@ def handle_client(client):
                 client_data_partial = pickle.load(f)
 
             # client_data_partial.pop(client_nickname)
-            client_data[client_nickname][0].close()
+            # client_data[client_nickname][0].close()
 
             try:
                 broadcast(announcement)
